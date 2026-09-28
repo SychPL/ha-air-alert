@@ -12,6 +12,7 @@ from homeassistant.const import CONF_LATITUDE, CONF_LOCATION, CONF_LONGITUDE
 from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.selector import (
+    BooleanSelector,
     LocationSelector,
     LocationSelectorConfig,
     NumberSelector,
@@ -96,9 +97,9 @@ class AirAlertOptionsFlow(OptionsFlowWithReload):
             step_id="init",
             errors=errors,
             data_schema=vol.Schema({
-                vol.Required(k, default=current[k]): NumberSelector(
-                    NumberSelectorConfig(min=0, max=2000, step=1, mode=NumberSelectorMode.BOX)
-                )
-                for k in OPTION_DEFAULTS
+                vol.Required(k, default=current[k]): BooleanSelector()
+                if isinstance(v, bool)
+                else NumberSelector(NumberSelectorConfig(min=0, max=2000, step=1, mode=NumberSelectorMode.BOX))
+                for k, v in OPTION_DEFAULTS.items()
             }),
         )

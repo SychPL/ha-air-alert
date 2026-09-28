@@ -29,7 +29,8 @@ def _nearest_eta(d: dict) -> dict | None:
 
 
 def _summary(t: dict) -> dict:
-    return {k: t[k] for k in ("id", "type", "locality", "distance_km", "bearing_deg", "approaching", "eta_min")}
+    return {k: t[k] for k in ("id", "type", "locality", "distance_km", "bearing_deg", "inbound",
+                              "approaching", "eta_min")}
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -46,6 +47,8 @@ SENSORS = (
         value_fn=lambda d: d["level"],
         attrs_fn=lambda d: {
             "official_level": d["official_level"],
+            "official_effective": d["official_effective"],
+            "threat_heading_here": d["inbound"],
             "osint_level": d["osint_level"],
             "reasons": d["reasons"],
             "official_alerts": d["official"],

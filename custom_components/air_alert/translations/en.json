@@ -31,7 +31,8 @@
           "ua_alert_km": "Ukrainian air-raid alert regions within (km) raise WATCH",
           "eta_warning_min": "ETA to alarm radius that raises WARNING (min)",
           "downgrade_min": "Hold time before lowering the OSINT level (min)",
-          "official_ttl_h": "Official alert without update is treated as stale after (h)"
+          "official_ttl_h": "Official alert without update is treated as stale after (h)",
+          "alarm_needs_osint": "Official alarm counts as ALARM only when a tracked threat is heading my way (otherwise one level lower)"
         }
       }
     },

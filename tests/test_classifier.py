@@ -7,7 +7,9 @@ from air_alert.classifier import (
     LevelHold,
     Settings,
     TrackHistory,
+    any_inbound,
     assess_tracks,
+    confirm_official,
     official_level,
     osint_level,
     ua_alerts_near,
@@ -101,3 +103,22 @@ def test_level_hold():
     assert h.update("safe", NOW + timedelta(minutes=5)) == "warning"
     assert h.update("safe", NOW + timedelta(minutes=11)) == "safe"
     assert h.update("alarm", NOW + timedelta(minutes=12)) == "alarm"  # escalation is immediate
+
+
+def test_inbound_by_course():
+    # east of home: flying west = towards home, flying north = not
+    towards = assess_tracks([threat(heading=265)], HOME, S, TrackHistory(), NOW)
+    past = assess_tracks([threat(heading=0)], HOME, S, TrackHistory(), NOW)
+    unknown = assess_tracks([threat(heading=None)], HOME, S, TrackHistory(), NOW)
+    assert towards[0]["inbound"] and any_inbound(towards)
+    assert not past[0]["inbound"] and not unknown[0]["inbound"]
+    assert not any_inbound(assess_tracks([threat(heading=265, advisory=True)], HOME, S, TrackHistory(), NOW))
+    assert not any_inbound(assess_tracks([threat(heading=265, status="stale")], HOME, S, TrackHistory(), NOW))
+
+
+def test_official_needs_inbound_threat():
+    assert confirm_official("alarm", inbound=True) == "alarm"
+    assert confirm_official("alarm", inbound=False) == "warning"
+    assert confirm_official("warning", inbound=False) == "watch"
+    assert confirm_official("watch", inbound=False) == "watch"  # stale/unknown scope stays visible
+    assert confirm_official("safe", inbound=False) == "safe"

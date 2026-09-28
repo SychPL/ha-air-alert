@@ -14,6 +14,7 @@ OPTION_DEFAULTS = {
     "eta_warning_min": 30,
     "downgrade_min": 10,
     "official_ttl_h": 3,
+    "alarm_needs_osint": True,
 }
 
 SCAN_INTERVAL = timedelta(seconds=30)  # NEPTUN asks for >= 5 s

@@ -21,7 +21,9 @@ from .classifier import (
     LevelHold,
     Settings,
     TrackHistory,
+    any_inbound,
     assess_tracks,
+    confirm_official,
     official_level,
     osint_level,
     top,
@@ -71,6 +73,7 @@ class AirAlertCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self._oblast_km: dict[str, float] | None = None
         self._official_at: datetime | None = None
         self._last_level: str | None = None
+        self._inbound_until: datetime | None = None
         self._src = {n: {"ok": None, "last_success": None, "error": None} for n in ("neptun", "rcb", "rso")}
         self._neptun: dict[str, Any] = {"threats": [], "alerts": {}}
         self._rcb: dict | None = None
@@ -184,17 +187,28 @@ class AirAlertCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         osint = self.hold.update(osint_raw, now)
         official_items = self._official_items(now)
         official, official_reasons = official_level(official_items)
-        level = top(official, osint)  # OSINT can raise, never lower an official level
+        # hold "heading my way" like the OSINT level, so ALARM does not flap when a track blinks out
+        if any_inbound(tracks):
+            self._inbound_until = now + timedelta(minutes=s.downgrade_min)
+        inbound = self._inbound_until is not None and now <= self._inbound_until
+        official_eff = confirm_official(official, inbound or not s.alarm_needs_osint)
+        if official_eff != official:
+            official_reasons = [f"{r} (no tracked threat heading here: {official} -> {official_eff})"
+                                for r in official_reasons]
+        level = top(official_eff, osint)
         reasons = official_reasons + osint_reasons
         if self._last_level is not None and level != self._last_level:
             self.hass.bus.async_fire(EVENT_LEVEL_CHANGED, {
                 "entry_id": self.config_entry.entry_id, "from": self._last_level, "to": level,
-                "official_level": official, "osint_level": osint, "reasons": reasons,
+                "official_level": official, "official_effective": official_eff,
+                "osint_level": osint, "reasons": reasons,
             })
         self._last_level = level
         return {
             "level": level,
-            "official_level": official,
+            "official_level": official,  # raw, before the direction check
+            "official_effective": official_eff,
+            "inbound": inbound,
             "osint_level": osint,
             "reasons": reasons,
             "official": [i for i in official_items

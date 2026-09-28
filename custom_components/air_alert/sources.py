@@ -130,7 +130,11 @@ def rcb_article_status(revisions: list[str], voivodeship: str) -> dict:
 
 # ---------------------------------------------------------------- RSO (TVP)
 def parse_rso(data: dict, now: datetime) -> list[dict]:
-    """Active air-threat messages from an RSO voivodeship feed. `now` = naive Polish local time."""
+    """Current air-threat state from an RSO voivodeship feed. `now` = naive Polish local time.
+
+    Each RCB update arrives as a separate message valid until midnight, so only the
+    newest one counts (a later "odwołano" supersedes an earlier alarm). Exercises are skipped.
+    """
     out = []
     for n in data.get("newses") or []:
         text = " ".join(filter(None, (n.get("title"), n.get("shortcut"), n.get("content"))))
@@ -142,7 +146,8 @@ def parse_rso(data: dict, now: datetime) -> list[dict]:
             end = datetime.strptime(n["valid_to"], "%Y-%m-%d %H:%M:%S")
         except (KeyError, TypeError, ValueError):
             continue
-        if start <= now <= end:
+        if start <= now <= end and kind != "exercise":
             out.append({"id": n.get("id"), "title": n.get("title"), "kind": kind,
-                        "text": n.get("shortcut") or n.get("title"), "valid_to": n["valid_to"]})
-    return out
+                        "text": n.get("content") or n.get("shortcut") or n.get("title"),
+                        "valid_to": n["valid_to"], "created": n.get("created_at") or n["valid_from"]})
+    return sorted(out, key=lambda i: i["created"])[-1:]

@@ -22,13 +22,20 @@ zapytanie przy konfiguracji) i można je poprawić.
 
 | Poziom | Kiedy |
 |---|---|
-| `alarm` | **tylko oficjalnie**: aktualny komunikat RCB/RSO dla Twojego województwa wzywający do działania ("Znajdź bezpieczne miejsce", "alarm powietrzny") |
-| `warning` | oficjalny komunikat informacyjny dla województwa (np. "atak na Ukrainę, sytuacja monitorowana") **lub** OSINT: zagrożenie w promieniu ostrzeżenia (100 km, po odjęciu niepewności pozycji) albo szacowane ETA do promienia alarmu < 30 min |
-| `watch` | OSINT: zagrożenie w promieniu obserwacji (300 km), alarm w ukraińskim rejonie/obwodzie w promieniu 150 km, oficjalny komunikat bez określonego obszaru lub bez aktualizacji dłużej niż 3 h |
+| `alarm` | **tylko oficjalnie**: aktualny komunikat RCB/RSO dla Twojego województwa wzywający do działania ("Znajdź bezpieczne miejsce", "alarm powietrzny") **i** śledzone zagrożenie w promieniu obserwacji leci w Twoją stronę (kurs ±45° od kierunku na dom) |
+| `warning` | oficjalny alarm bez zagrożenia lecącego w Twoją stronę, oficjalny komunikat informacyjny (np. "atak na Ukrainę, sytuacja monitorowana") z zagrożeniem lecącym w Twoją stronę, **lub** OSINT: zagrożenie w promieniu ostrzeżenia (100 km, po odjęciu niepewności pozycji) albo szacowane ETA do promienia alarmu < 30 min |
+| `watch` | oficjalny komunikat informacyjny bez zagrożenia lecącego w Twoją stronę, OSINT: zagrożenie w promieniu obserwacji (300 km), alarm w ukraińskim rejonie/obwodzie w promieniu 150 km, oficjalny komunikat bez określonego obszaru lub bez aktualizacji dłużej niż 3 h |
 | `safe` | brak znanych zagrożeń - to nie jest gwarancja bezpieczeństwa |
 
 Zasady:
-- Poziom końcowy = max(oficjalny, OSINT). OSINT nigdy nie obniża ani nie odwołuje oficjalnego alertu.
+- Alert RCB trafia do całego województwa, także gdy drony lecą gdzie indziej. Dlatego oficjalny poziom
+  jest obniżany o jeden stopień (alarm -> warning, informacja -> watch), dopóki żaden śledzony tor nie leci
+  w Twoją stronę. Nigdy nie spada do `safe`, a `binary_sensor.air_alert_rcb` pokazuje surowy sygnał oficjalny.
+  Wyłączysz to w opcjach ("Oficjalny alarm daje ALARM tylko gdy...").
+- **Ograniczenie:** NEPTUN śledzi drony tylko nad Ukrainą (słabo na Wołyniu i we Lwowie). Dron już nad
+  Polską zwykle znika z danych, więc przy prawdziwym zagrożeniu poziom może zostać na `warning`.
+  Dla krytycznych działań (syrena, budzenie) reaguj też na `binary_sensor.air_alert_rcb`.
+- Poziom końcowy = max(oficjalny po korekcie, OSINT).
 - OSINT nie daje `alarm`. Ekstrapolacja toru (CPA/ETA) może podnieść tylko do `warning`.
 - Tor jest ekstrapolowany tylko przy znanej prędkości (podanej przez NEPTUN albo zmierzonej z naszych
   kolejnych obserwacji). Sam kurs nie wystarcza.
@@ -42,7 +49,7 @@ Wszystkie promienie i czasy zmienisz w opcjach integracji.
 
 | Encja | Opis |
 |---|---|
-| `sensor.air_alert_level` | `safe` / `watch` / `warning` / `alarm`; atrybuty: `official_level`, `osint_level`, `reasons`, `official_alerts`, `ua_alerts_near`, `sources` (stan i czas ostatniego pobrania każdego źródła) |
+| `sensor.air_alert_level` | `safe` / `watch` / `warning` / `alarm`; atrybuty: `official_level` (surowy), `official_effective` (po korekcie kierunku), `threat_heading_here`, `osint_level`, `reasons`, `official_alerts`, `ua_alerts_near`, `sources` (stan i czas ostatniego pobrania każdego źródła) |
 | `binary_sensor.air_alert_rcb` | włączony gdy obowiązuje oficjalny komunikat (RCB/RSO) dla obszaru |
 | `sensor.air_alert_closest_threat` | km do najbliższego zagrożenia; atrybuty: typ, namiar, kurs, pewność, niepewność, liczba źródeł, prędkość zbliżania, CPA, ETA |
 | `sensor.air_alert_active_threats` | liczba zagrożeń w promieniu obserwacji |

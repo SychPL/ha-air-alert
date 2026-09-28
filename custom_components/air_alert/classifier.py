@@ -2,8 +2,10 @@
 
 Official (RCB/RSO) and OSINT (NEPTUN) evidence are classified separately:
 - official can reach ALARM; OSINT is capped at WARNING,
-- the final level is max(official, osint), so OSINT can never lower or cancel
-  an official alert,
+- with `alarm_needs_osint` an official level is lowered one step while no
+  tracked threat is heading towards home (RCB alerts cover a whole voivodeship);
+  it never drops below WATCH and the raw official signal stays visible,
+- the final level is max(official, osint),
 - extrapolated positions (CPA/ETA) only ever raise OSINT to WARNING.
 """
 from __future__ import annotations
@@ -15,6 +17,7 @@ from datetime import datetime, timedelta
 from .geo import approach, bearing_deg, distance_km
 
 LEVELS = ["safe", "watch", "warning", "alarm"]
+INBOUND_DEG = 45  # course within this angle of the direction to home = "heading my way"
 
 
 def rank(level: str) -> int:
@@ -34,6 +37,7 @@ class Settings:
     eta_warning_min: float = 30
     downgrade_min: float = 10
     official_ttl_h: float = 3
+    alarm_needs_osint: bool = True
 
 
 class TrackHistory:
@@ -88,7 +92,7 @@ def assess_tracks(threats, home, s: Settings, history: TrackHistory, now) -> lis
             "position_quality": t.get("positionQuality"),
             "advisory": bool(t.get("advisory")), "stale": t.get("status") == "stale",
             "updated_at": t.get("updatedAt"),
-            "velocity_source": None, "speed_kmh": None, "approaching": None,
+            "inbound": False, "velocity_source": None, "speed_kmh": None, "approaching": None,
             "closing_kmh": None, "cpa_km": None, "cpa_min": None, "eta_min": None,
         }
         v = t.get("velocity") or {}
@@ -103,6 +107,10 @@ def assess_tracks(threats, home, s: Settings, history: TrackHistory, now) -> lis
             info.update({k: None if x is None else round(x, 1) for k, x in a.items()})
             info["speed_kmh"] = round(vel[0])
             info["approaching"] = a["closing_kmh"] > 0
+        course = vel[1] if vel else t.get("heading")
+        if course is not None:
+            to_home = bearing_deg(t["lat"], t["lon"], home[0], home[1])
+            info["inbound"] = abs((course - to_home + 180) % 360 - 180) <= INBOUND_DEG
         out.append(info)
     return sorted(out, key=lambda i: i["distance_km"])
 
@@ -155,6 +163,16 @@ def official_level(items: list[dict]) -> tuple[str, list[str]]:
             reasons.append(f"{i['source']}: {i['text']}")
         level = top(level, lvl)
     return level, reasons
+
+
+def confirm_official(level: str, inbound: bool) -> str:
+    """Official level after the OSINT direction check: one step lower when nothing
+    tracked is heading towards home. Never below WATCH."""
+    return level if inbound else {"alarm": "warning", "warning": "watch"}.get(level, level)
+
+
+def any_inbound(tracks: list[dict]) -> bool:
+    return any(t["inbound"] and not t["stale"] and not t["advisory"] for t in tracks)
 
 
 class LevelHold:

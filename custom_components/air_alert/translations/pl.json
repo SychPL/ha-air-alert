@@ -31,7 +31,8 @@
           "ua_alert_km": "Alarmy w obwodach/rejonach Ukrainy bliżej niż (km) dają WATCH",
           "eta_warning_min": "ETA do promienia alarmu dające WARNING (min)",
           "downgrade_min": "Czas utrzymania przed obniżeniem poziomu OSINT (min)",
-          "official_ttl_h": "Oficjalny alert bez aktualizacji uznany za nieaktualny po (h)"
+          "official_ttl_h": "Oficjalny alert bez aktualizacji uznany za nieaktualny po (h)",
+          "alarm_needs_osint": "Oficjalny alarm daje ALARM tylko gdy śledzone zagrożenie leci w moją stronę (inaczej poziom niżej)"
         }
       }
     },

@@ -53,7 +53,7 @@ class ThreatLocation(CoordinatorEntity[AirAlertCoordinator], GeolocationEvent):
             self._attr_extra_state_attributes = {
                 k: t[k] for k in ("type", "region", "heading", "confidence", "source_count",
                                   "uncertainty_km", "position_quality", "advisory", "stale",
-                                  "approaching", "eta_min", "updated_at")
+                                  "inbound", "approaching", "eta_min", "updated_at")
             }
 
     @callback

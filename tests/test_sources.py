@@ -107,3 +107,16 @@ def test_rcb_markup_change_is_a_parse_error():
         parse_rcb_detail("<article><div class='body'>x</div></article>")
     with pytest.raises(ParseError):
         parse_rcb_list("<html>redesigned</html>")
+
+
+def test_rso_newest_message_supersedes():
+    def msg(i, created, text):
+        return {"id": i, "title": "ALERT RCB", "shortcut": "ALERT RCB", "content": text,
+                "valid_from": created, "valid_to": "2026-09-28 23:59:00", "created_at": created}
+    info = msg(1, "2026-09-28 18:51:00", "UWAGA! Rosyjski atak powietrzny na terenie Ukrainy. Sytuacja jest monitorowana.")
+    alarm = msg(2, "2026-09-28 19:10:00", "Zagrożenie atakiem z powietrza. Znajdź bezpieczne miejsce.")
+    cancel = msg(3, "2026-09-28 20:00:00", "Odwołano zagrożenie atakiem z powietrza.")
+    at = lambda h, m: datetime(2026, 9, 28, h, m)
+    assert [i["kind"] for i in parse_rso({"newses": [info]}, at(19, 0))] == ["warning"]
+    assert [i["kind"] for i in parse_rso({"newses": [info, alarm]}, at(19, 30))] == ["alarm"]
+    assert [i["kind"] for i in parse_rso({"newses": [cancel, alarm, info]}, at(20, 5))] == ["cancelled"]
