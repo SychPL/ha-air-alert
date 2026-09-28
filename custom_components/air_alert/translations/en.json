@@ -1,0 +1,97 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Air Alert",
+        "description": "Location to protect (defaults to Home Assistant home).",
+        "data": {
+          "location": "Location"
+        }
+      },
+      "area": {
+        "title": "Voivodeship",
+        "description": "Used for RSO messages and to match RCB alerts. Guessed from the location - check it.",
+        "data": {
+          "voivodeship": "Voivodeship"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "This location is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Air Alert",
+        "data": {
+          "watch_km": "Watch radius (km) - any tracked threat closer raises WATCH",
+          "warning_km": "Warning radius (km) - threat closer (minus uncertainty) raises WARNING",
+          "alarm_km": "Alarm radius (km) used for ETA",
+          "ua_alert_km": "Ukrainian air-raid alert regions within (km) raise WATCH",
+          "eta_warning_min": "ETA to alarm radius that raises WARNING (min)",
+          "downgrade_min": "Hold time before lowering the OSINT level (min)",
+          "official_ttl_h": "Official alert without update is treated as stale after (h)"
+        }
+      }
+    },
+    "error": {
+      "radii_order": "Radii must satisfy: alarm <= warning <= watch."
+    }
+  },
+  "selector": {
+    "voivodeship": {
+      "options": {
+        "dolnoslaskie": "dolnośląskie",
+        "kujawsko-pomorskie": "kujawsko-pomorskie",
+        "lubelskie": "lubelskie",
+        "lubuskie": "lubuskie",
+        "lodzkie": "łódzkie",
+        "malopolskie": "małopolskie",
+        "mazowieckie": "mazowieckie",
+        "opolskie": "opolskie",
+        "podkarpackie": "podkarpackie",
+        "podlaskie": "podlaskie",
+        "pomorskie": "pomorskie",
+        "slaskie": "śląskie",
+        "swietokrzyskie": "świętokrzyskie",
+        "warminsko-mazurskie": "warmińsko-mazurskie",
+        "wielkopolskie": "wielkopolskie",
+        "zachodniopomorskie": "zachodniopomorskie"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "level": {
+        "name": "Level",
+        "state": {
+          "safe": "Safe",
+          "watch": "Watch",
+          "warning": "Warning",
+          "alarm": "Alarm"
+        }
+      },
+      "closest_threat": {
+        "name": "Closest threat"
+      },
+      "active_threats": {
+        "name": "Active threats"
+      },
+      "approaching_threats": {
+        "name": "Approaching threats"
+      },
+      "eta": {
+        "name": "ETA"
+      },
+      "last_update": {
+        "name": "Last update"
+      }
+    },
+    "binary_sensor": {
+      "rcb": {
+        "name": "Official alert"
+      }
+    }
+  }
+}

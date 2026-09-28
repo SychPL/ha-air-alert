@@ -1,0 +1,97 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Air Alert",
+        "description": "Lokalizacja do monitorowania (domyślnie dom z Home Assistant).",
+        "data": {
+          "location": "Lokalizacja"
+        }
+      },
+      "area": {
+        "title": "Województwo",
+        "description": "Używane dla komunikatów RSO i dopasowania alertów RCB. Odgadnięte z lokalizacji - sprawdź.",
+        "data": {
+          "voivodeship": "Województwo"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "Ta lokalizacja jest już skonfigurowana."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Air Alert",
+        "data": {
+          "watch_km": "Promień obserwacji (km) - każde zagrożenie bliżej daje WATCH",
+          "warning_km": "Promień ostrzeżenia (km) - zagrożenie bliżej (minus niepewność) daje WARNING",
+          "alarm_km": "Promień alarmu (km) do liczenia ETA",
+          "ua_alert_km": "Alarmy w obwodach/rejonach Ukrainy bliżej niż (km) dają WATCH",
+          "eta_warning_min": "ETA do promienia alarmu dające WARNING (min)",
+          "downgrade_min": "Czas utrzymania przed obniżeniem poziomu OSINT (min)",
+          "official_ttl_h": "Oficjalny alert bez aktualizacji uznany za nieaktualny po (h)"
+        }
+      }
+    },
+    "error": {
+      "radii_order": "Promienie muszą spełniać: alarm <= ostrzeżenie <= obserwacja."
+    }
+  },
+  "selector": {
+    "voivodeship": {
+      "options": {
+        "dolnoslaskie": "dolnośląskie",
+        "kujawsko-pomorskie": "kujawsko-pomorskie",
+        "lubelskie": "lubelskie",
+        "lubuskie": "lubuskie",
+        "lodzkie": "łódzkie",
+        "malopolskie": "małopolskie",
+        "mazowieckie": "mazowieckie",
+        "opolskie": "opolskie",
+        "podkarpackie": "podkarpackie",
+        "podlaskie": "podlaskie",
+        "pomorskie": "pomorskie",
+        "slaskie": "śląskie",
+        "swietokrzyskie": "świętokrzyskie",
+        "warminsko-mazurskie": "warmińsko-mazurskie",
+        "wielkopolskie": "wielkopolskie",
+        "zachodniopomorskie": "zachodniopomorskie"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "level": {
+        "name": "Poziom zagrożenia",
+        "state": {
+          "safe": "Bezpiecznie",
+          "watch": "Obserwacja",
+          "warning": "Ostrzeżenie",
+          "alarm": "Alarm"
+        }
+      },
+      "closest_threat": {
+        "name": "Najbliższe zagrożenie"
+      },
+      "active_threats": {
+        "name": "Aktywne zagrożenia"
+      },
+      "approaching_threats": {
+        "name": "Zbliżające się zagrożenia"
+      },
+      "eta": {
+        "name": "Szacowany czas dotarcia"
+      },
+      "last_update": {
+        "name": "Ostatnia aktualizacja"
+      }
+    },
+    "binary_sensor": {
+      "rcb": {
+        "name": "Oficjalny alert"
+      }
+    }
+  }
+}
