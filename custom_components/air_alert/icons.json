@@ -1,0 +1,26 @@
+{
+  "entity": {
+    "sensor": {
+      "level": {
+        "default": "mdi:shield-alert-outline",
+        "state": {
+          "safe": "mdi:shield-check-outline",
+          "watch": "mdi:eye-outline",
+          "warning": "mdi:alert",
+          "alarm": "mdi:alarm-light"
+        }
+      },
+      "closest_threat": { "default": "mdi:map-marker-distance" },
+      "active_threats": { "default": "mdi:airplane" },
+      "approaching_threats": { "default": "mdi:airplane-alert" },
+      "eta": { "default": "mdi:timer-alert-outline" },
+      "last_update": { "default": "mdi:update" }
+    },
+    "binary_sensor": {
+      "rcb": {
+        "default": "mdi:bullhorn-outline",
+        "state": { "on": "mdi:bullhorn" }
+      }
+    }
+  }
+}
