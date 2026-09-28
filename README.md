@@ -81,8 +81,11 @@ automation:
 
 ## Instalacja
 
-HACS -> Custom repositories -> URL tego repozytorium, kategoria Integration -> zainstaluj ->
-restart HA -> Ustawienia -> Urządzenia i usługi -> Dodaj integrację -> "Air Alert PL".
+[![Otwórz w HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=SychPL&repository=ha-air-alert&category=integration)
+
+Albo ręcznie: HACS -> Repozytoria niestandardowe -> `SychPL/ha-air-alert`, typ **Integracja**
+(nie Dashboard) -> Pobierz -> restart HA -> Ustawienia -> Urządzenia i usługi -> Dodaj integrację ->
+"Air Alert PL".
 
 ## Rozwój
 
