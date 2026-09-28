@@ -77,6 +77,7 @@ class AirAlertCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self._src = {n: {"ok": None, "last_success": None, "error": None} for n in ("neptun", "rcb", "rso")}
         self._neptun: dict[str, Any] = {"threats": [], "alerts": {}}
         self._rcb: dict | None = None
+        self._rcb_revs: dict[str, int] = {}  # article url -> most revisions seen
         self._rso: dict[str, Any] = {}
 
     async def _async_setup(self) -> None:
@@ -124,6 +125,12 @@ class AirAlertCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             if (today - date.fromisoformat(it["date"])).days > 1:
                 break
             revs = parse_rcb_detail(await self._get(RCB_BASE + it["url"], text=True))
+            # gov.pl sits behind a cache (max-age=600) that sometimes serves an older copy;
+            # never step back to fewer revisions, or a cancelled alert briefly comes back
+            if len(revs) < self._rcb_revs.get(it["url"], 0):
+                _LOGGER.debug("Stale copy of %s (%d revisions), keeping previous state", it["url"], len(revs))
+                return
+            self._rcb_revs[it["url"]] = len(revs)
             st = rcb_article_status(revs, self.voivodeship)
             if st["kind"] in ("alarm", "warning", "cancelled") and st["scope"] != "other":
                 self._rcb = {**it, **st}
